@@ -30,7 +30,7 @@ The waypoints are transformed from the map to the vehicle's coordinate system (l
 
 ### Model Predictive Control with Latency
 
-I had to play around with the weights of different parts of the cost function. Giving higher weights to the cost terms controlling difference between consecutive actuations made significant difference in making the car less wobbly and complete the track. The car was driving around the track without explicitly accounting for the latency. Then to directly account for latency, the new state estimates are calculated based on current vehicle model for the duration of the latency. The resulting state is the new initial state for MPC.
+I had to play around with the weights of different parts of the cost function. Giving higher weights to the cost terms controlling difference between consecutive actuations made significant difference in making the car less wobbly and complete the track. The car was driving around the track without explicitly accounting for the latency. Then to directly account for latency, the new state estimates are calculated based on current vehicle model for the duration of the latency (implemented in function Simulate() in lines # 267-284 of MPC.cpp). The resulting state is the new initial state for MPC.
 
 
 ## Dependencies
