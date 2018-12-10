@@ -3,6 +3,36 @@ Self-Driving Car Engineer Nanodegree Program
 
 ---
 
+## Project Description
+
+The goal of this project to implement Model Predictive Control (MPC) to drive a car around the track in a simulator. The The goal of Model Predictive Control is to optimize the control inputs: steering angle and throttle. Additionally, the actuator commands are then delayed by 100 ms to simulate real world scenarios.
+
+### The Model
+
+The kinematic model is used for this project. The state of the vehicle includes vehicle's x and y coordinates, orientation angle (psi), velocity, cross-track error (cte) and orientation angle error (epsi). MPC optimizer outputs steering angle (delta) and throttle value (a). The model combines the state and actuations from the previous timestep to calculate the state for the current timestep based on the equations below:
+```
+x[t+1] = x[t] + v[t] * cos(psi[t]) * dt;
+y[t+1] = y[t] + v[t] * sin(psi[t]) * dt;
+psi[t+1] = psi[t] + v[t] * delta[t] / Lf * dt;
+v[t+1] = v[t] + a[t] * dt;
+cte[t+1] = f(x[t]) - y[t] + v[t] * sin(epsi[t]) * dt
+epsi[t+1] = psi[t] - psides[t] + v[t] * delta[t] / Lf * dt
+```
+Lf is the distance between the center of mass of the vehicle and the front wheels and affects the maneuverability.
+
+### Timestep Length and Elapsed Duration (N & dt)
+
+I iterated a few values of N and dt and converged on using N = 10 and dt = 0.1 seconds. With a 100 ms latency for actuations, using dt = 0.1 seconds made a lot of sense. I chose N after a few trials since it was giving best tradeoff between complexity and performance. 
+
+### Polynomial Fitting and MPC Preprocessing
+
+The waypoints are transformed from the map to the vehicle's coordinate system (lines # 107-119 in main.cpp). A third order polynomial is then fitted to the waypoints.
+
+### Model Predictive Control with Latency
+
+I had to play around with the weights of different parts of the cost function. Giving higher weights to the cost terms controlling difference between consecutive actuations made significant difference in making the car less wobbly and complete the track. The car was driving around the track without explicitly accounting for the latency. Then to directly account for latency, the new state estimates are calculated based on current vehicle model for the duration of the latency. The resulting state is the new initial state for MPC.
+
+
 ## Dependencies
 
 * cmake >= 3.5

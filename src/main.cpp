@@ -9,6 +9,7 @@
 #include "Eigen-3.3/Eigen/QR"
 #include "MPC.h"
 
+using namespace std;
 // for convenience
 using json = nlohmann::json;
 
@@ -91,6 +92,8 @@ int main() {
           double py = j[1]["y"];
           double psi = j[1]["psi"];
           double v = j[1]["speed"];
+          double delta = j[1]["steering_angle"];
+          double a = j[1]["throttle"];
 
           /*
           * TODO: Calculate steering angle and throttle using MPC.
@@ -101,6 +104,40 @@ int main() {
           double steer_value;
           double throttle_value;
 
+          Eigen::VectorXd car_ref_x(ptsx.size());
+          Eigen::VectorXd car_ref_y(ptsy.size());
+
+          // transform waypoints to be from car's perspective
+          // this means we can consider px = 0, py = 0, and psi = 0
+          // greatly simplifying future calculations
+          double delta_x, delta_y;
+          for (size_t i = 0; i < ptsx.size(); i++) {
+            delta_x = ptsx[i] - px;
+            delta_y = ptsy[i] - py;
+            car_ref_x(i) = delta_x * cos(-psi) - delta_y * sin(-psi);
+            car_ref_y(i) = delta_x * sin(-psi) + delta_y * cos(-psi);
+          }
+
+
+          auto coeffs = polyfit(car_ref_x, car_ref_y, 3);
+          //Calculate cte and epsi. cte is the horizontal line
+          double cte = polyeval(coeffs, 0);
+          cout << "cte = " << cte << "\n";
+          double epsi = -atan(coeffs[1]);
+
+          //Create the state vector
+          Eigen::VectorXd state(6);
+          // Initial state.
+          state << 0, 0, 0, v, cte, epsi;
+          
+          // latency of 100 ms
+          double latency = 0.1; 
+          // Estimate state after delay
+          state = mpc.Simulate(state, delta, a, latency);
+          auto vars = mpc.Solve(state, coeffs);
+          steer_value = -vars[0]/deg2rad(25);
+          throttle_value = vars[1];
+
           json msgJson;
           // NOTE: Remember to divide by deg2rad(25) before you send the steering value back.
           // Otherwise the values will be in between [-deg2rad(25), deg2rad(25] instead of [-1, 1].
@@ -110,6 +147,11 @@ int main() {
           //Display the MPC predicted trajectory 
           vector<double> mpc_x_vals;
           vector<double> mpc_y_vals;
+
+          for (unsigned int i = 2; i < vars.size(); i = i+2) {
+            mpc_x_vals.push_back(vars[i]);
+            mpc_y_vals.push_back(vars[i+1]);
+          }
 
           //.. add (x,y) points to list here, points are in reference to the vehicle's coordinate system
           // the points in the simulator are connected by a Green line
@@ -123,6 +165,12 @@ int main() {
 
           //.. add (x,y) points to list here, points are in reference to the vehicle's coordinate system
           // the points in the simulator are connected by a Yellow line
+
+          for (double i = 0; i < car_ref_x.size(); i++){
+            next_x_vals.push_back(car_ref_x(i));
+            next_y_vals.push_back(car_ref_y(i));
+          }
+
 
           msgJson["next_x"] = next_x_vals;
           msgJson["next_y"] = next_y_vals;

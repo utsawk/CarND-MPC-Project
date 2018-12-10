@@ -4,6 +4,8 @@
 #include <vector>
 #include "Eigen-3.3/Eigen/Core"
 
+using namespace std;
+
 class MPC {
  public:
   MPC();
@@ -12,7 +14,8 @@ class MPC {
 
   // Solve the model given an initial state and polynomial coefficients.
   // Return the first actuations.
-  std::vector<double> Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs);
+  vector<double> Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs);
+  Eigen::VectorXd Simulate(Eigen::VectorXd state, double delta, double a, double latency);
 };
 
 #endif /* MPC_H */
