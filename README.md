@@ -5,11 +5,11 @@ Self-Driving Car Engineer Nanodegree Program
 
 ## Project Description
 
-The goal of this project to implement Model Predictive Control (MPC) to drive a car around the track in a simulator. The The goal of Model Predictive Control is to optimize the control inputs: steering angle and throttle. Additionally, the actuator commands are then delayed by 100 ms to simulate real world scenarios.
+The goal of this project to implement Model Predictive Control (MPC) to drive a car around the track in a simulator. The goal of Model Predictive Control is to optimize the control inputs: steering angle and throttle. Additionally, the actuator commands are then delayed by 100 ms to simulate real world scenarios.
 
 ### The Model
 
-The kinematic model is used for this project. The state of the vehicle includes vehicle's x and y coordinates, orientation angle (psi), velocity, cross-track error (cte) and orientation angle error (epsi). MPC optimizer outputs steering angle (delta) and throttle value (a). The model combines the state and actuations from the previous timestep to calculate the state for the current timestep based on the equations below:
+The kinematic model is used for this project. The state of the vehicle includes vehicle's x and y coordinates, orientation angle (psi), velocity, cross-track error (cte) and orientation angle error (epsi). MPC optimizer outputs steering angles (delta) and throttle values (a). The model combines the state and actuations from the previous timestep to calculate the state for the current timestep based on the equations below:
 ```
 x[t+1] = x[t] + v[t] * cos(psi[t]) * dt;
 y[t+1] = y[t] + v[t] * sin(psi[t]) * dt;
@@ -22,7 +22,7 @@ Lf is the distance between the center of mass of the vehicle and the front wheel
 
 ### Timestep Length and Elapsed Duration (N & dt)
 
-I iterated a few values of N and dt and converged on using N = 10 and dt = 0.1 seconds. With a 100 ms latency for actuations, using dt = 0.1 seconds made a lot of sense. I chose N after a few trials since it was giving best tradeoff between complexity and performance. 
+I iterated a few values of N and dt and converged on using N = 10 and dt = 0.1 seconds. With a 100 ms latency for actuations, dt should atleast have a value of 100 ms (or 0.1 seconds). I chose N after a few trials since it was giving best tradeoff between complexity and performance. 
 
 ### Polynomial Fitting and MPC Preprocessing
 
